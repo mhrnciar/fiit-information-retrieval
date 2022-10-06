@@ -12,7 +12,7 @@ import java.util.zip.GZIPOutputStream;
 
 public class GZIPParser {
     public static void main(String[] args) {
-        String gzipFile = "/Users/mhrnciar/Downloads/freebase-head-1000000.gz";
+        String gzipFile = "data/freebase-head-10000000.gz";
 
         decompressGzipFile(gzipFile);
     }
@@ -52,9 +52,15 @@ public class GZIPParser {
 
                     map.get(words[0]).setName(words[2]);
                 }
-                if (REGEX_OBJECT_PERSON.matcher(line).matches() || REGEX_OBJECT_DEAD_PERSON.matcher(line).matches()) {
+                if (REGEX_OBJECT_PERSON.matcher(line).matches()) {
                     people.write(line.getBytes());
                     people.write('\n');
+
+                    map.get(words[0]).setType(words[2]);
+                }
+                if (REGEX_OBJECT_DEAD_PERSON.matcher(line).matches()) {
+                    deceased.write(line.getBytes());
+                    deceased.write('\n');
 
                     map.get(words[0]).setType(words[2]);
                 }
@@ -95,6 +101,6 @@ public class GZIPParser {
         }
 
         Instant endTime = Instant.now();
-        System.out.println("Total execution time: " + Duration.between(startTime, endTime).toSeconds());
+        System.out.println("Total execution time: " + Duration.between(startTime, endTime).toSeconds() + " seconds");
     }
 }
