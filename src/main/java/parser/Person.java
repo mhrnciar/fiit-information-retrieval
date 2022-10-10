@@ -1,5 +1,6 @@
 package parser;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,10 +23,50 @@ public class Person {
             new SimpleDateFormat("yyyy")
     };
 
-    public Person(String id) {
-        setId(id);
-        setDeceased(false);
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+
+    public Person(String str, boolean csv) {
+        if (!csv) {
+            setId(str);
+            setDeceased(false);
+            this.size = 2;
+        }
+        else {
+            String[] columns = str.split(",");
+            this.id = columns[0];
+            this.deceased = columns[3].equals("true");
+            this.size = 2;
+
+            this.name = columns[1];
+            this.type = columns[2];
+
+            try {
+                this.dateOfBirth = df.parse(columns[4]);
+            } catch (ParseException ignored) { }
+
+            try {
+                this.dateOfDeath = df.parse(columns[5]);
+            } catch (ParseException ignored) { }
+        }
+    }
+
+    public Person(String id, String name, String type, String dateOfBirth, boolean deceased, String dateOfDeath) {
+        this.id = id;
         this.size = 2;
+
+        this.name = name;
+        this.type = type;
+
+        try {
+            this.dateOfBirth = df.parse(dateOfBirth);
+        } catch (ParseException ignored) { }
+
+        this.deceased = deceased;
+        if (deceased) {
+            try {
+                this.dateOfDeath = df.parse(dateOfDeath);
+            } catch (ParseException ignored) { }
+        }
     }
 
     public int size() {
@@ -104,7 +145,9 @@ public class Person {
                 } catch (ParseException ignored) { }
             }
         }
-        size++;
+        if (this.dateOfDeath != null) {
+            size++;
+        }
     }
 
     public boolean isDeceased() {
@@ -116,24 +159,41 @@ public class Person {
     }
 
     public void printPerson() {
-        String str = getId() + ": " + getName() +
+        StringBuilder str = new StringBuilder(getId() + ": " + getName() +
                 ",\n\tRaw ID: " + this.rawId +
                 ",\n\tType: " + getType() +
                 ",\n\tDeceased: " + isDeceased() +
-                ",\n\tDate of birth: " + getDateOfBirth() +
-                ",\n\tDate of death: " + getDateOfDeath();
+                ",\n\tDate of birth: " + df.format(getDateOfBirth()) +
+                ",\n\tDate of death: ");
+
+        if (getDateOfDeath() != null) {
+            str.append(df.format(getDateOfDeath()));
+        }
+        else {
+            str.append("null");
+        }
 
         System.out.println(str);
         System.out.println();
     }
 
     public String toString() {
-        return getId() + "," +
+        StringBuilder str = new StringBuilder(getId() + "," +
                 getName() + "," +
                 getType() + "," +
                 isDeceased() + "," +
-                getDateOfBirth() + "," +
-                getDateOfDeath() + "\n";
+                df.format(getDateOfBirth()) + ",");
+
+        if (getDateOfDeath() != null) {
+            str.append(df.format(getDateOfDeath()));
+        }
+        else {
+            str.append("null");
+        }
+
+        str.append("\n");
+
+        return str.toString();
     }
 
     public boolean isValid() {
@@ -142,12 +202,31 @@ public class Person {
         }
         return getDateOfBirth() != null && getName() != null;
     }
+
+    public boolean couldTheyMeet(Person p) {
+        if (!this.isDeceased() && !p.isDeceased()) {
+            return true;
+        }
+        else if (this.isDeceased() && !p.isDeceased()) {
+            return intersect(p, "right");
+        }
+        else if (!this.isDeceased() && p.isDeceased()) {
+            return intersect(p, "left");
+        }
+        else {
+            return intersect(p, "both");
+        }
+    }
+
+    private boolean intersect(Person p, String how) {
+        if (how.equals("right")) {
+            return this.getDateOfDeath().before(p.getDateOfBirth());
+        }
+        else if (how.equals("left")) {
+            return this.getDateOfBirth().before(p.getDateOfDeath());
+        }
+        else {
+            return this.getDateOfBirth().before(p.getDateOfDeath()) || this.getDateOfDeath().before(p.getDateOfBirth());
+        }
+    }
 }
-
-// EXTRACT ID <\w+[:\/]+[a-zA-Z.]+\/\w+\/(.\.\w+)>
-// EXTRACT TYPE <\w+[:\/]+[a-zA-Z.]+\/\w+\/([a-zA-Z._]+)>
-//  - EXTRACT ONLY CATEGORY <\w+[:\/]+[a-zA-Z.]+\/\w+\/people.person.([a-zA-Z._]+)>
-
-// EXTRACT DATE \"((\d+[:\-\/]*)+)\".*
-// EXTRACT NAME \"((\w+[ ]*)*)\"@(\w+)
-//  - ALTERNATIVE \"(.*)\"@(\w+)

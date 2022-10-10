@@ -44,7 +44,7 @@ public class GZIPParser {
                 String[] words = line.split("\t");
 
                 if (!map.containsKey(words[0])) {
-                    map.put(words[0], new Person(words[0]));
+                    map.put(words[0], new Person(words[0], false));
                 }
 
                 if (REGEX_OBJECT_NAME.matcher(line).matches()) {
