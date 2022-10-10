@@ -115,19 +115,25 @@ public class Person {
         this.deceased = deceased;
     }
 
-    public String printPerson() {
-        StringBuilder str = new StringBuilder();
-        str.append(getId()).append(": ").append(getName()).
-                append(",\n\tRaw ID: ").append(this.rawId).
-                append(",\n\tType: ").append(getType()).
-                append(",\n\tDeceased: ").append(isDeceased()).
-                append(",\n\tDate of birth: ").append(getDateOfBirth()).
-                append(",\n\tDate of death: ").append(getDateOfDeath());
+    public void printPerson() {
+        String str = getId() + ": " + getName() +
+                ",\n\tRaw ID: " + this.rawId +
+                ",\n\tType: " + getType() +
+                ",\n\tDeceased: " + isDeceased() +
+                ",\n\tDate of birth: " + getDateOfBirth() +
+                ",\n\tDate of death: " + getDateOfDeath();
 
         System.out.println(str);
         System.out.println();
+    }
 
-        return str.toString();
+    public String toString() {
+        return getId() + "," +
+                getName() + "," +
+                getType() + "," +
+                isDeceased() + "," +
+                getDateOfBirth() + "," +
+                getDateOfDeath() + "\n";
     }
 
     public boolean isValid() {

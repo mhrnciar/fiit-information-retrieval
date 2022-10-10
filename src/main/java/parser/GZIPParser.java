@@ -29,6 +29,7 @@ public class GZIPParser {
             FileOutputStream deceased = new FileOutputStream("output/deceased.txt");
             FileOutputStream births = new FileOutputStream("output/births.txt");
             FileOutputStream deaths = new FileOutputStream("output/deaths.txt");
+
             BufferedReader in = new BufferedReader(new InputStreamReader(fin, StandardCharsets.UTF_8));
 
             Pattern REGEX_OBJECT_NAME = Pattern.compile(".*<http://rdf\\.freebase\\.com/ns/type.object.name>.*");
@@ -92,12 +93,22 @@ public class GZIPParser {
 
         System.out.println("Parsing complete...");
 
-        for (Map.Entry<String, Person> mapEntry : map.entrySet()) {
-            Person value = mapEntry.getValue();
+        try {
+            FileOutputStream fout = new FileOutputStream("output/parsed.csv");
+            fout.write("id,name,type,is_deceased,date_of_birth,date_of_death\n".getBytes());
 
-            if (value.isValid() && value.size() >= 4) {
-                value.printPerson();
+            for (Map.Entry<String, Person> mapEntry : map.entrySet()) {
+                Person value = mapEntry.getValue();
+
+                if (value.isValid() && value.size() >= 4) {
+                    value.printPerson();
+                    fout.write(value.toString().getBytes());
+                }
             }
+
+            fout.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         Instant endTime = Instant.now();
