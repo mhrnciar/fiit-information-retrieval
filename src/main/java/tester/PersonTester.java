@@ -29,38 +29,49 @@ public class PersonTester {
         p2.printPerson();
 
         System.out.println(p1.couldTheyMeet(p2));
+
+        indexer.saveIndex("index");
     }
 
     public static void consoleTest() {
         Indexer indexer = new Indexer("output/parsed.csv");
-        indexer.createIndex();
+        // indexer.createIndex();
+        indexer.readIndex("index/hashmap_index");
 
         Scanner scanner = new Scanner(System.in);
         String input, line;
 
-        System.out.print("Enter full name of first person: ");
-        input = scanner.nextLine();
-        line = indexer.findRow(input);
+        do {
+            System.out.print("Enter full name of first person: ");
+            input = scanner.nextLine();
+            line = indexer.findRow(input);
 
-        if (line == null) {
-            System.out.println("Entered name has not been found!");
-        }
+            if (line == null) {
+                System.out.println("Entered name has not been found!");
+            }
+        } while (line == null);
 
         Person p1 = new Person(line, true);
         p1.printPerson();
 
-        System.out.print("Enter full name of second person: ");
-        input = scanner.nextLine();
-        line = indexer.findRow(input);
+        do {
+            System.out.print("Enter full name of second person: ");
+            input = scanner.nextLine();
+            line = indexer.findRow(input);
 
-        if (line == null) {
-            System.out.println("Entered name has not been found!");
-        }
+            if (line == null) {
+                System.out.println("Entered name has not been found!");
+            }
+        } while (line == null);
 
         Person p2 = new Person(line, true);
         p2.printPerson();
 
-        System.out.println(p1.couldTheyMeet(p2));
+        if (p1.couldTheyMeet(p2)) {
+            System.out.println("Yes, " + p1.getName() + " and " + p2.getName() + " could have met.");
+        } else {
+            System.out.println("No, " + p1.getName() + " and " + p2.getName() + " could not have met.");
+        }
     }
 
 

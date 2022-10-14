@@ -1,7 +1,6 @@
 package parser;
 
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.HashMap;
 
 public class Indexer {
@@ -37,16 +36,42 @@ public class Indexer {
         if (!index.containsKey(name)) {
             return null;
         }
+
         long offset = index.get(name);
 
         try {
             file.seek(offset);
-
             return file.readLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    public void saveIndex(String path) {
+        try {
+            File file = new File(path + "/hashmap_index");
+            FileOutputStream fstream = new FileOutputStream(file);
+            ObjectOutputStream fout = new ObjectOutputStream(fstream);
+
+            fout.writeObject(index);
+            fout.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readIndex(String path) {
+        try {
+            File file = new File(path);
+            FileInputStream fstream = new FileInputStream(file);
+            ObjectInputStream fin = new ObjectInputStream(fstream);
+
+            this.index = (HashMap<String, Long>) fin.readObject();
+            fin.close();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 }
