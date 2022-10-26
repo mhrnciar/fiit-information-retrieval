@@ -1,4 +1,4 @@
-package parser;
+package indexer;
 
 import java.io.*;
 import java.util.HashMap;

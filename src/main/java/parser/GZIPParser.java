@@ -8,22 +8,21 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 public class GZIPParser {
     public static void main(String[] args) {
-        String gzipFile = "data/freebase-head-10000000.gz";
+        String path = "data/freebase-head-10000000.gz";
 
-        decompressGzipFile(gzipFile);
+        parse(path);
     }
 
-    private static void decompressGzipFile(String gzipFile) {
+    private static void parse(String path) {
         System.out.println("Started parsing...");
         Instant startTime = Instant.now();
         HashMap< String, Person > map = new HashMap<>();
 
         try {
-            GZIPInputStream fin = new GZIPInputStream(new FileInputStream(gzipFile));
+            GZIPInputStream fin = new GZIPInputStream(new FileInputStream(path));
             FileOutputStream names = new FileOutputStream("output/names.txt");
             FileOutputStream people = new FileOutputStream("output/people.txt");
             FileOutputStream deceased = new FileOutputStream("output/deceased.txt");
