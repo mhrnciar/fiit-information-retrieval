@@ -1,9 +1,5 @@
-package tester;
-
 import indexer.Indexer;
 import parser.Person;
-import parser.SparkParser;
-
 import java.util.Scanner;
 
 public class PersonTester {
@@ -75,21 +71,12 @@ public class PersonTester {
         }
     }
 
-    public static void sparkTester() {
-        SparkParser parser = new SparkParser();
-
-        parser.parse("data/freebase-head-1000000.gz");
-    }
-
-
     public static void main(String[] args) {
         // comparisonTest();
 
         // indexingTest();
 
-        // consoleTest();
-
-        sparkTester();
+        consoleTest();
     }
 }
 

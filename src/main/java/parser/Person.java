@@ -40,13 +40,19 @@ public class Person {
             this.name = columns[1];
             this.type = columns[2];
 
-            try {
-                this.dateOfBirth = df.parse(columns[4]);
-            } catch (ParseException ignored) { }
+            for (SimpleDateFormat pattern : knownPatterns) {
+                try {
+                    this.dateOfBirth = pattern.parse(columns[4]);
+                    break;
+                } catch (ParseException ignored) { }
+            }
 
-            try {
-                this.dateOfDeath = df.parse(columns[5]);
-            } catch (ParseException ignored) { }
+            for (SimpleDateFormat pattern : knownPatterns) {
+                try {
+                    this.dateOfDeath = pattern.parse(columns[5]);
+                    break;
+                } catch (ParseException ignored) { }
+            }
         }
     }
 
@@ -57,15 +63,46 @@ public class Person {
         this.name = name;
         this.type = type;
 
-        try {
-            this.dateOfBirth = df.parse(dateOfBirth);
-        } catch (ParseException ignored) { }
+        for (SimpleDateFormat pattern : knownPatterns) {
+            try {
+                this.dateOfBirth = pattern.parse(dateOfBirth);
+                break;
+            } catch (ParseException ignored) { }
+        }
 
         this.deceased = deceased;
         if (deceased) {
+            for (SimpleDateFormat pattern : knownPatterns) {
+                try {
+                    this.dateOfDeath = pattern.parse(dateOfDeath);
+                    break;
+                } catch (ParseException ignored) { }
+            }
+        }
+    }
+
+    public Person(String id, String name, String dateOfBirth, String deceased, String dateOfDeath) {
+        this.id = id;
+        this.size = 2;
+
+        this.name = name;
+        this.type = "people.person";
+
+        for (SimpleDateFormat pattern : knownPatterns) {
             try {
-                this.dateOfDeath = df.parse(dateOfDeath);
+                this.dateOfBirth = pattern.parse(dateOfBirth);
+                break;
             } catch (ParseException ignored) { }
+        }
+
+        this.deceased = deceased.equals("true");
+        if (this.deceased) {
+            for (SimpleDateFormat pattern : knownPatterns) {
+                try {
+                    this.dateOfDeath = pattern.parse(dateOfDeath);
+                    break;
+                } catch (ParseException ignored) { }
+            }
         }
     }
 
@@ -160,7 +197,6 @@ public class Person {
 
     public void printPerson() {
         StringBuilder str = new StringBuilder(getId() + ": " + getName() +
-                ",\n\tRaw ID: " + this.rawId +
                 ",\n\tType: " + getType() +
                 ",\n\tDeceased: " + isDeceased() +
                 ",\n\tDate of birth: " + df.format(getDateOfBirth()) +

@@ -7,55 +7,72 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.spark.sql.Row;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Objects;
 
 public class LuceneIndexer {
     public IndexWriter writer;
+    public RandomAccessFile file;
 
-    public LuceneIndexer(String indexDirectoryPath) throws IOException {
-        //this directory will contain the indexes
-        Directory indexDirectory = FSDirectory.open(new File(indexDirectoryPath).toPath());
+    public LuceneIndexer(String filePath, String indexDirectoryPath) {
+        try {
+            Directory indexDirectory = FSDirectory.open(new File(indexDirectoryPath).toPath());
+            writer = new IndexWriter(indexDirectory, new IndexWriterConfig(new StandardAnalyzer()));
 
-        //create the indexer
-        writer = new IndexWriter(indexDirectory, new IndexWriterConfig(new StandardAnalyzer()));
+            file = new RandomAccessFile(filePath, "r");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void close() throws IOException {
-        writer.close();
+    public void createIndex() {
+        String line;
+        try {
+            while ((line = file.readLine()) != null) {
+                String[] cols = line.split(",");
+                Document doc = getDocument(cols[0], cols[2], cols[3], cols[4]);
+
+                writer.addDocument(doc);
+            }
+            close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private Document getDocument(String id, String name, String dateOfBirth, String dateOfDeath) throws IOException {
+    private Document getDocument(String id, String name, String dateOfBirth, String dateOfDeath) {
         Document document = new Document();
 
-        //index file contents
         TextField idField = new TextField("id", id, TextField.Store.YES);
-        //index file name
         TextField nameField = new TextField("name", name, TextField.Store.YES);
-        //index file path
         TextField dateOfBirthField = new TextField("date_of_birth", dateOfBirth, TextField.Store.YES);
-        TextField dateOfDeathField = new TextField("date_of_death", dateOfDeath, TextField.Store.YES);
+
+        TextField isDeceasedField;
+        TextField dateOfDeathField;
+        if (dateOfDeath.equals("\"\"")) {
+            isDeceasedField = new TextField("is_deceased", "false", TextField.Store.YES);
+            dateOfDeathField = new TextField("date_of_death", "null", TextField.Store.YES);
+        }
+        else {
+            isDeceasedField = new TextField("is_deceased", "true", TextField.Store.YES);
+            dateOfDeathField = new TextField("date_of_death", dateOfDeath, TextField.Store.YES);
+        }
 
         document.add(idField);
         document.add(nameField);
+        document.add(isDeceasedField);
         document.add(dateOfBirthField);
         document.add(dateOfDeathField);
 
         return document;
     }
 
-    public void addToIndex(Row row) {
-        String id = row.get(0).toString();
-        String name = row.get(0).toString();
-        String datoOfBirth = row.get(0).toString();
-        String dateOfDeath = row.get(0).toString();
-
+    public void close() {
         try {
-            Document doc = getDocument(id, name, datoOfBirth, dateOfDeath);
-            writer.addDocument(doc);
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
