@@ -197,7 +197,6 @@ public class Person {
 
     public void printPerson() {
         StringBuilder str = new StringBuilder(getId() + ": " + getName() +
-                ",\n\tType: " + getType() +
                 ",\n\tDeceased: " + isDeceased() +
                 ",\n\tDate of birth: " + df.format(getDateOfBirth()) +
                 ",\n\tDate of death: ");
@@ -256,13 +255,13 @@ public class Person {
 
     private boolean intersect(Person p, String how) {
         if (how.equals("right")) {
-            return this.getDateOfDeath().before(p.getDateOfBirth());
+            return this.getDateOfDeath().after(p.getDateOfBirth());
         }
         else if (how.equals("left")) {
             return this.getDateOfBirth().before(p.getDateOfDeath());
         }
         else {
-            return this.getDateOfBirth().before(p.getDateOfDeath()) || this.getDateOfDeath().before(p.getDateOfBirth());
+            return this.getDateOfBirth().before(p.getDateOfDeath()) && this.getDateOfDeath().after(p.getDateOfBirth());
         }
     }
 }
