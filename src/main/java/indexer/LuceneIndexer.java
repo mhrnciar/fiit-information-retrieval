@@ -11,12 +11,16 @@ import org.apache.lucene.store.FSDirectory;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.Objects;
 
 public class LuceneIndexer {
     public IndexWriter writer;
     public RandomAccessFile file;
 
+    /**
+     * Constructor for Lucene indexer.
+     * @param filePath path to CSV file of people
+     * @param indexDirectoryPath path to directory where index will be stored
+     */
     public LuceneIndexer(String filePath, String indexDirectoryPath) {
         try {
             Directory indexDirectory = FSDirectory.open(new File(indexDirectoryPath).toPath());
@@ -28,6 +32,10 @@ public class LuceneIndexer {
         }
     }
 
+    /**
+     * Create Lucene index of the CSV file. Iterate through lines and for each entity, create new document which will
+     * be written to the index.
+     */
     public void createIndex() {
         String line;
         try {
@@ -43,6 +51,14 @@ public class LuceneIndexer {
         }
     }
 
+    /**
+     * Create new Document object with information about a Person.
+     * @param id Person's ID
+     * @param name full name
+     * @param dateOfBirth date of birth
+     * @param dateOfDeath date of death that may be null, in that case the person is set as alive
+     * @return Document object of the Person
+     */
     private Document getDocument(String id, String name, String dateOfBirth, String dateOfDeath) {
         Document document = new Document();
 
@@ -52,6 +68,11 @@ public class LuceneIndexer {
 
         TextField isDeceasedField;
         TextField dateOfDeathField;
+
+        /*
+         * If the date of death is null (is an empty string), the Person is set as alive and to date of death is
+         * saved null, if the date is not empty, the Person is set to deceased
+         */
         if (dateOfDeath.equals("\"\"")) {
             isDeceasedField = new TextField("is_deceased", "false", TextField.Store.YES);
             dateOfDeathField = new TextField("date_of_death", "null", TextField.Store.YES);
@@ -70,6 +91,9 @@ public class LuceneIndexer {
         return document;
     }
 
+    /**
+     * Close index writer.
+     */
     public void close() {
         try {
             writer.close();

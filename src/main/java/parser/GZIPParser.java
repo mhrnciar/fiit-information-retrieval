@@ -10,18 +10,20 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 public class GZIPParser {
-    public static void main(String[] args) {
-        String path = "data/freebase-head-10000000.gz";
-
-        parse(path);
-    }
-
-    private static void parse(String path) {
+    /**
+     * Parse the FreeBase dump saved in gzip format, and save the result to output/parsed.csv.
+     * @param path path to dump file
+     */
+    public void parse(String path) {
         System.out.println("Started parsing...");
         Instant startTime = Instant.now();
         HashMap< String, Person > map = new HashMap<>();
 
         try {
+            /*
+             * Open the gzip dump and create files for rows with alive and deceased people, names, dates of birth,
+             * dates of death. Then create regexes for matching only required rows.
+             */
             GZIPInputStream fin = new GZIPInputStream(new FileInputStream(path));
             FileOutputStream names = new FileOutputStream("output/names.txt");
             FileOutputStream people = new FileOutputStream("output/people.txt");
@@ -39,6 +41,12 @@ public class GZIPParser {
 
             String line;
 
+            /*
+             * Iterate through dump by lines and for each line, try to match it to one of the categories using
+             * previously created regexes. If the ID does not exist, create new record in HashMap with the ID and
+             * empty Person object. If the ID is present in the HashMap, add the value to its respective variable
+             * in the Person object with matching ID
+             */
             while ((line = in.readLine()) != null) {
                 String[] words = line.split("\t");
 
@@ -78,7 +86,7 @@ public class GZIPParser {
                     map.get(words[0]).setDateOfDeath(words[2]);
                 }
             }
-            //close resources
+            //Close files
             names.close();
             people.close();
             deceased.close();
@@ -92,6 +100,12 @@ public class GZIPParser {
 
         System.out.println("Parsing complete...");
 
+        /*
+         * Create new CSV file for parsed people and write header row. Next, iterate through the HashMap and write
+         * Person which contains at least 4 out of 5 possible facts (ID, name, is deceased, date of birth, and
+         * date of death), and if the Person is valid (if the person is deceased, it contains the date of death,
+         * and the name and date of birth is not missing)
+         */
         try {
             FileOutputStream fout = new FileOutputStream("output/parsed.csv");
             fout.write("id,name,type,is_deceased,date_of_birth,date_of_death\n".getBytes());

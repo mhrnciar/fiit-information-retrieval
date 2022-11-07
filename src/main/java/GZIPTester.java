@@ -1,8 +1,21 @@
 import indexer.Indexer;
+import parser.GZIPParser;
 import parser.Person;
 import java.util.Scanner;
 
-public class PersonTester {
+public class GZIPTester {
+    /**
+     * Dummy test to parse dump file.
+     */
+    public static void parsingTest() {
+        GZIPParser parser = new GZIPParser();
+
+        parser.parse("data/freebase-head-10000000.gz");
+    }
+
+    /**
+     * Test to validate whether the evaluation if two people could meet works correctly.
+     */
     public static void comparisonTest() {
         Person p1 = new Person("m.aaaaaaa", "Matej Hrnciar", "people.person", "1999-12-10", false, null);
         Person p2 = new Person("m.bbbbbbb", "Stefan Kralovic", "people.deceased_person", "1822-10-17", true, "1893-03-03");
@@ -15,6 +28,9 @@ public class PersonTester {
         System.out.println(p3.couldTheyMeet(p4));
     }
 
+    /**
+     * Test to validate creation of index and subsequent searching + saving of the index to file.
+     */
     public static void indexingTest() {
         Indexer indexer = new Indexer("output/parsed.csv");
         indexer.createIndex();
@@ -30,6 +46,9 @@ public class PersonTester {
         indexer.saveIndex("index");
     }
 
+    /**
+     * Test to validate loading of the index and searching using console.
+     */
     public static void consoleTest() {
         Indexer indexer = new Indexer("output/parsed.csv");
         // indexer.createIndex();
@@ -72,6 +91,8 @@ public class PersonTester {
     }
 
     public static void main(String[] args) {
+        // parsingTest();
+
         // comparisonTest();
 
         // indexingTest();

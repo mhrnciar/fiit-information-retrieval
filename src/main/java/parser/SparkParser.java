@@ -11,12 +11,20 @@ import static org.apache.spark.sql.functions.*;
 import static org.apache.spark.sql.functions.col;
 
 public class SparkParser {
+    /**
+     * Parse the FreeBase dump saved in gzip format using Spark, and save the result to CSV file.
+     * @param path path to dump file
+     */
     public void parse(String path) {
         SparkSession spark = SparkSession.builder().master("local[*]").appName("Could They Meet").getOrCreate();
 
         System.out.println("Started parsing...");
         Instant startTime = Instant.now();
 
+        /*
+         * Open the dump as a dataset and split the rows into 3 columns - subject, operator and value. Subject
+         * represents the ID of the entity, so it is also extracted using regex
+         */
         Dataset<Row> df = spark.read().option("delimiter", " ").text(path);
         df = df.select(
                 split(col("value"), "\t").getItem(0).as("subject"),
@@ -28,7 +36,7 @@ public class SparkParser {
                 col("value")
         );
 
-        // TODO: Divide fields into multiple dataframes by filters, apply regex extracting, and use join to collect data with the same IDs
+        // Divide dataset into multiple smaller ones by type, so create separate dataset for names, for dates of birth, etc.
         Dataset<Row> df_people = df
                 .filter(col("value").rlike(".*<http://rdf\\.freebase\\.com/ns/people\\.person>.*|.*<http://rdf\\.freebase\\.com/ns/people\\.deceased_person>.*"))
                 .select(col("subject").as("id"),
@@ -53,6 +61,10 @@ public class SparkParser {
                         regexp_extract(col("value"), "\"((\\d+[:\\-/]*)+)\".*", 1).as("date_of_death")
                 );
 
+        /*
+         * Join datasets by ID, filter out records without name and date of birth (as they should be present in every
+         * person), and drop duplicated rows, so only one row per person is in dataset
+         */
         Dataset<Row> df_joined = df_people
                 .join(df_names, df_people.col("id").equalTo(df_names.col("id_name")))
                 .join(df_birth, df_people.col("id").equalTo(df_birth.col("id_dob")))
@@ -65,6 +77,7 @@ public class SparkParser {
                 .filter("name != '' AND date_of_birth != ''")
                 .dropDuplicates("id");
 
+        // Coalesce all partitions into one and save the people into CSV file in output/spark_parsed
         df_joined.coalesce(1).write().format("csv").option("header", true).save("output/spark_parsed");
 
         Instant endTime = Instant.now();
