@@ -11,7 +11,7 @@ import java.util.zip.GZIPInputStream;
 
 public class GZIPParser {
     /**
-     * Parse the FreeBase dump saved in gzip format, and save the result to output/parsed.csv.
+     * Parse the FreeBase dump saved in gzip format, and save the result to output/gzip-parsed.csv.
      * @param path path to dump file
      */
     public void parse(String path) {
@@ -107,7 +107,7 @@ public class GZIPParser {
          * and the name and date of birth is not missing)
          */
         try {
-            FileOutputStream fout = new FileOutputStream("output/parsed.csv");
+            FileOutputStream fout = new FileOutputStream("output/gzip-parsed.csv");
             fout.write("id,name,type,is_deceased,date_of_birth,date_of_death\n".getBytes());
 
             for (Map.Entry<String, Person> mapEntry : map.entrySet()) {

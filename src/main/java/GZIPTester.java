@@ -32,7 +32,7 @@ public class GZIPTester {
      * Test to validate creation of index and subsequent searching + saving of the index to file.
      */
     public static void indexingTest() {
-        Indexer indexer = new Indexer("output/parsed.csv");
+        Indexer indexer = new Indexer("output/gzip-parsed.csv");
         indexer.createIndex();
 
         Person p1 = new Person(indexer.findRow("Chris Morgan"), true);
@@ -50,7 +50,7 @@ public class GZIPTester {
      * Test to validate loading of the index and searching using console.
      */
     public static void consoleTest() {
-        Indexer indexer = new Indexer("output/parsed.csv");
+        Indexer indexer = new Indexer("output/gzip-parsed.csv");
         // indexer.createIndex();
         indexer.readIndex("index/hashmap_index");
 
@@ -100,9 +100,3 @@ public class GZIPTester {
         consoleTest();
     }
 }
-
-// Iblis
-// Justo Daract
-
-// Chris Morgan
-// Alan Mansley

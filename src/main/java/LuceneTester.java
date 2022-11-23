@@ -15,17 +15,22 @@ public class LuceneTester {
     public static void sparkParsingTest() {
         SparkParser parser = new SparkParser();
 
-        parser.parse("data/freebase-head-10000000.gz");
+        parser.parse("data/freebase-head-1000000.gz", "output/spark-parsed");
     }
 
     /**
-     * Test to validate creating new Lucene index, searching it, and evaluating whether two people could meet.
+     * Test to validate creating new Lucene index.
      */
     public static void luceneIndexingTest() {
-        // String path = "output/spark_parsed/part-00000-11d80915-9d10-4202-b5c7-6a9e1bedb88f-c000.csv";
-        // LuceneIndexer indexer = new LuceneIndexer(path, "index/luceneindex");
-        // indexer.createIndex();
+        String path = "output/spark-parsed";
+        LuceneIndexer indexer = new LuceneIndexer(path, "index/luceneindex");
+        indexer.createIndex();
+    }
 
+    /**
+     * Test to validate searching the Lucene index and evaluating whether two people could meet.
+     */
+    public static void luceneSearchingTest() {
         LuceneSearcher searcher = new LuceneSearcher("index/luceneindex");
 
         Scanner scanner = new Scanner(System.in);
@@ -76,15 +81,8 @@ public class LuceneTester {
     public static void main(String[] args) {
         // sparkParsingTest();
 
-        luceneIndexingTest();
+        // luceneIndexingTest();
+
+        luceneSearchingTest();
     }
 }
-
-// David Cohen
-// Margaret Waring
-
-// Chris Morgan
-// Alan Mansley
-
-// Lars Olsson Smith
-// Piotr

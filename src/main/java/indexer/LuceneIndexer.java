@@ -13,39 +13,58 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 public class LuceneIndexer {
-    public IndexWriter writer;
-    public RandomAccessFile file;
+    private IndexWriter writer;
+    private File dirPath;
 
     /**
      * Constructor for Lucene indexer.
-     * @param filePath path to CSV file of people
+     * @param dirPath path to directory with CSV files
      * @param indexDirectoryPath path to directory where index will be stored
      */
-    public LuceneIndexer(String filePath, String indexDirectoryPath) {
+    public LuceneIndexer(String dirPath, String indexDirectoryPath) {
         try {
             Directory indexDirectory = FSDirectory.open(new File(indexDirectoryPath).toPath());
             writer = new IndexWriter(indexDirectory, new IndexWriterConfig(new StandardAnalyzer()));
 
-            file = new RandomAccessFile(filePath, "r");
+            this.dirPath = new File(dirPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Create Lucene index of the CSV file. Iterate through lines and for each entity, create new document which will
-     * be written to the index.
+     * Create Lucene index of all the CSV files in dirPath. Iterate through lines and for each entity, create new
+     * document and write it to the index.
      */
     public void createIndex() {
         String line;
-        try {
-            while ((line = file.readLine()) != null) {
-                String[] cols = line.split(",");
-                Document doc = getDocument(cols[0], cols[2], cols[3], cols[4]);
+        RandomAccessFile file;
+        File[] paths = dirPath.listFiles();
 
-                writer.addDocument(doc);
+        try {
+            assert paths != null;
+            for (File path : paths) {
+                file = new RandomAccessFile(path.getAbsolutePath(), "r");
+                file.readLine();
+
+                while ((line = file.readLine()) != null) {
+                    String[] cols = line.split(",");
+                    Document doc;
+
+                    if (cols.length == 4) {
+                        doc = getDocument(cols[0], cols[2], cols[3], null);
+                    }
+                    else {
+                        doc = getDocument(cols[0], cols[2], cols[3], cols[4]);
+                    }
+
+                    writer.addDocument(doc);
+                }
+
+                file.close();
             }
-            close();
+
+            writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -70,10 +89,10 @@ public class LuceneIndexer {
         TextField dateOfDeathField;
 
         /*
-         * If the date of death is null (is an empty string), the Person is set as alive and to date of death is
-         * saved null, if the date is not empty, the Person is set to deceased
+         * If the date of death is null, the Person is set as alive and to date of death is
+         * saved null; if the date is not empty, the Person is set to deceased
          */
-        if (dateOfDeath.equals("\"\"")) {
+        if (dateOfDeath == null) {
             isDeceasedField = new TextField("is_deceased", "false", TextField.Store.YES);
             dateOfDeathField = new TextField("date_of_death", "null", TextField.Store.YES);
         }
@@ -89,16 +108,5 @@ public class LuceneIndexer {
         document.add(dateOfDeathField);
 
         return document;
-    }
-
-    /**
-     * Close index writer.
-     */
-    public void close() {
-        try {
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
