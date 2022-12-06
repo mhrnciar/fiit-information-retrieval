@@ -3,53 +3,57 @@ import parser.GZIPParser;
 import parser.Person;
 import java.util.Scanner;
 
+import static org.junit.Assert.*;
+import org.junit.Test;
+
 public class GZIPTester {
     /**
-     * Dummy test to parse dump file.
+     * Test to validate whether the evaluation of two people could meet works correctly.
      */
-    public static void parsingTest() {
-        GZIPParser parser = new GZIPParser();
-
-        parser.parse("data/freebase-head-10000000.gz");
-    }
-
-    /**
-     * Test to validate whether the evaluation if two people could meet works correctly.
-     */
-    public static void comparisonTest() {
+    @Test
+    public void comparisonTest() {
         Person p1 = new Person("m.aaaaaaa", "Matej Hrnciar", "people.person", "1999-12-10", false, null);
         Person p2 = new Person("m.bbbbbbb", "Stefan Kralovic", "people.deceased_person", "1822-10-17", true, "1893-03-03");
         Person p3 = new Person("m.ccccccc", "Blanka Pretrhnuta", "people.person", "1990-01-15", false, null);
         Person p4 = new Person("m.ddddddd", "Juraj Kovac", "people.deceased_person", "1779-06-27", true, "1834-09-01");
 
-        System.out.println(p1.couldTheyMeet(p2));
-        System.out.println(p2.couldTheyMeet(p4));
-        System.out.println(p3.couldTheyMeet(p1));
-        System.out.println(p3.couldTheyMeet(p4));
+        assertFalse(p1.couldTheyMeet(p2));
+        assertTrue(p2.couldTheyMeet(p4));
+        assertTrue(p3.couldTheyMeet(p1));
+        assertFalse(p3.couldTheyMeet(p4));
     }
 
     /**
-     * Test to validate creation of index and subsequent searching + saving of the index to file.
+     * Test to validate loading of index and searching it.
      */
-    public static void indexingTest() {
+    @Test
+    public void indexingTest() {
         Indexer indexer = new Indexer("output/gzip-parsed.csv");
-        indexer.createIndex();
+        indexer.readIndex("index/hashmap_index");
 
         Person p1 = new Person(indexer.findRow("Chris Morgan"), true);
         Person p2 = new Person(indexer.findRow("Ted Ballard"), true);
 
-        p1.printPerson();
-        p2.printPerson();
-
-        System.out.println(p1.couldTheyMeet(p2));
-
-        indexer.saveIndex("index");
+        assertTrue(p1.couldTheyMeet(p2));
     }
 
     /**
-     * Test to validate loading of the index and searching using console.
+     * Parse the dump file, create index and save it to file.
      */
-    public static void consoleTest() {
+    public static void parseGZIP() {
+        GZIPParser parser = new GZIPParser();
+
+        parser.parse("data/freebase-head-10000000.gz");
+
+        Indexer indexer = new Indexer("output/gzip-parsed.csv");
+        indexer.createIndex();
+        indexer.saveIndex("index/hashmap_index");
+    }
+
+    /**
+     * Load the index and search it using console.
+     */
+    public static void searchIndex() {
         Indexer indexer = new Indexer("output/gzip-parsed.csv");
         // indexer.createIndex();
         indexer.readIndex("index/hashmap_index");
@@ -91,12 +95,8 @@ public class GZIPTester {
     }
 
     public static void main(String[] args) {
-        // parsingTest();
+        // parseGZIP();
 
-        // comparisonTest();
-
-        // indexingTest();
-
-        consoleTest();
+        searchIndex();
     }
 }

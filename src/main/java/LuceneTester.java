@@ -8,21 +8,54 @@ import parser.Person;
 import parser.SparkParser;
 
 import java.util.Scanner;
+import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class LuceneTester {
     /**
-     * Dummy test to parse dump file using Spark.
+     * Test to validate index searching and evaluation.
      */
-    public static void sparkParsingTest() {
+    @Test
+    public void luceneSearchTest() {
+        LuceneSearcher searcher = new LuceneSearcher("index/luceneindex");
+
+        TopDocs hits = searcher.search("Elon Musk");
+        Document doc = searcher.getDocument(hits.scoreDocs[0]);
+        Person p1 = new Person(doc.get("id"), doc.get("name"), doc.get("date_of_birth"), doc.get("is_deceased"), doc.get("date_of_death"));
+
+        hits = searcher.search("Chuck Norris");
+        doc = searcher.getDocument(hits.scoreDocs[0]);
+        Person p2 = new Person(doc.get("id"), doc.get("name"), doc.get("date_of_birth"), doc.get("is_deceased"), doc.get("date_of_death"));
+
+        hits = searcher.search("Ulrich Geisser");
+        doc = searcher.getDocument(hits.scoreDocs[0]);
+        Person p3 = new Person(doc.get("id"), doc.get("name"), doc.get("date_of_birth"), doc.get("is_deceased"), doc.get("date_of_death"));
+
+        hits = searcher.search("Piotr");
+        doc = searcher.getDocument(hits.scoreDocs[0]);
+        Person p4 = new Person(doc.get("id"), doc.get("name"), doc.get("date_of_birth"), doc.get("is_deceased"), doc.get("date_of_death"));
+
+        assertTrue(p1.couldTheyMeet(p2));
+        assertTrue(p2.couldTheyMeet(p4));
+        assertFalse(p3.couldTheyMeet(p1));
+        assertFalse(p3.couldTheyMeet(p4));
+    }
+
+    /**
+     * Parse dump file using Spark.
+     */
+    public static void parseSpark() {
         SparkParser parser = new SparkParser();
 
         parser.parse("data/freebase-head-1000000.gz", "output/spark-parsed");
     }
 
     /**
-     * Test to validate creating new Lucene index.
+     * Create new Lucene index.
      */
-    public static void luceneIndexingTest() {
+    public static void createLuceneIndex() {
         String path = "output/spark-parsed";
         LuceneIndexer indexer = new LuceneIndexer(path, "index/luceneindex");
         indexer.createIndex();
@@ -77,9 +110,9 @@ public class LuceneTester {
     }
 
     /**
-     * Test to validate searching the Lucene index and evaluating whether two people could meet.
+     * Search the Lucene index and evaluate whether two people could meet.
      */
-    public static void luceneSearchingTest() {
+    public static void searchLuceneIndex() {
         LuceneSearcher searcher = new LuceneSearcher("index/luceneindex");
 
         Document doc = performSearch(searcher, "first");
@@ -99,10 +132,10 @@ public class LuceneTester {
     }
 
     public static void main(String[] args) {
-        // sparkParsingTest();
+        // parseSpark();
 
-        // luceneIndexingTest();
+        // createLuceneIndex();
 
-        luceneSearchingTest();
+        searchLuceneIndex();
     }
 }
